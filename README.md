@@ -8,6 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
+| v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.2) | [`5239dc3`](https://github.com/nexterias/actions-vercel/commit/5239dc3e447feddcb5cb70663bc2f67292946e87) |
 | v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.0.0) | [`9a0f034`](https://github.com/nexterias/actions-vercel/commit/9a0f034d979251b1e0498731400bf32df3b00a27) |
 
 ## Privacy
