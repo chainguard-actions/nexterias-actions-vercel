@@ -1,15 +1,47 @@
-# nexterias/actions-vercel
+# actions-vercel
+
+[![CI](https://github.com/nexterias/actions-vercel/actions/workflows/ci.yml/badge.svg)](https://github.com/nexterias/actions-vercel/actions/workflows/ci.yml)
 
 Deploy to Vercel with GitHub Actions
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/nexterias/actions-vercel](https://github.com/nexterias/actions-vercel).
+## Usage
 
-## Versions
+```yml
+name: Vercel
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.2) | [`5239dc3`](https://github.com/nexterias/actions-vercel/commit/5239dc3e447feddcb5cb70663bc2f67292946e87) |
-| v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.0.0) | [`9a0f034`](https://github.com/nexterias/actions-vercel/commit/9a0f034d979251b1e0498731400bf32df3b00a27) |
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: nexterias/actions-vercel@v1
+        with:
+          token: ${{ secrets.YOUR_VERCEL_TOKEN }}
+          org-id: ${{ secrets.YOUR_VERCEL_ORG_ID }}
+          project-id: ${{ secrets.YOUR_VERCEL_PROJECT_ID }}
+          production: ${{ github.ref == 'refs/heads/main' }}
+          prebuilt: true # If set to true, build will be performed using GitHub Actions.
+```
+
+## Examples
+
+- [nexterias/homepage](https://github.com/nexterias/homepage)
 
 ## Privacy
 
