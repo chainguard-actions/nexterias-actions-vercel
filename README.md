@@ -1,17 +1,80 @@
-# nexterias/actions-vercel
+# actions-vercel
+
+[![CI](https://github.com/nexterias/actions-vercel/actions/workflows/ci.yml/badge.svg)](https://github.com/nexterias/actions-vercel/actions/workflows/ci.yml)
 
 Deploy to Vercel with GitHub Actions
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/nexterias/actions-vercel](https://github.com/nexterias/actions-vercel).
+## Overview
 
-## Versions
+`nexterias/actions-vercel` is a GitHub Action that deploys Vercel projects from GitHub Actions. By building the project on the GitHub Actions runner when necessary and deploying it to Vercel, it can reduce Vercel-side build time to zero.
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.2.1 | [`v1.2.1`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.1) | [`8105e68`](https://github.com/nexterias/actions-vercel/commit/8105e682d635529a5aa77c44d131303c7a500e03) |
-| v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.2) | [`5239dc3`](https://github.com/nexterias/actions-vercel/commit/5239dc3e447feddcb5cb70663bc2f67292946e87) |
-| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.3) | [`40c9331`](https://github.com/nexterias/actions-vercel/commit/40c93311b3f4db0424ad64f8ff8e16b2820d7c38) |
-| v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.0.0) | [`9a0f034`](https://github.com/nexterias/actions-vercel/commit/9a0f034d979251b1e0498731400bf32df3b00a27) |
+## Features
+
+- 🚀 Switch between preview and production deployments.
+- 🧹 Remove preview deployments from Vercel when their associated branches are deleted.
+- 🏗️ Deploy the build result from GitHub Actions with `prebuilt: true`.
+- 🔗 Integrate deployments with pull request comments, commit statuses, and GitHub Deployments.
+- 🧩 Add custom steps such as tests and notifications before or after deployment.
+
+## Usage
+
+```yml
+name: Vercel
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+  pull_request:
+  delete:
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.event.deleted == false) }}
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required to check out the repository.
+      deployments: write # (Optional) Create and update GitHub Deployments.
+      statuses: write # (Optional) Create and update commit statuses.
+      pull-requests: write # (Optional) Post comments on pull requests.
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: nexterias/actions-vercel@v2
+        with:
+          token: ${{ secrets.YOUR_VERCEL_TOKEN }}
+          org-id: ${{ secrets.YOUR_VERCEL_ORG_ID }}
+          project-id: ${{ secrets.YOUR_VERCEL_PROJECT_ID }}
+          production: ${{ github.ref == 'refs/heads/main' }}
+          prebuilt: true # If set to true, build will be performed using GitHub Actions.
+
+  # (Optional) When a branch is deleted from the remote repository,
+  # this job removes all preview deployments created for that branch from Vercel.
+  cleanup:
+    if: ${{ github.event_name == 'delete' && github.event.ref_type == 'branch' }}
+    name: Cleanup deployments
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: nexterias/actions-vercel@v2
+        with:
+          token: ${{ secrets.YOUR_VERCEL_TOKEN }}
+          org-id: ${{ secrets.YOUR_VERCEL_ORG_ID }}
+          project-id: ${{ secrets.YOUR_VERCEL_PROJECT_ID }}
+          cleanup-deployment: true
+```
+
+## Documentation
+
+See the [documentation](https://actions-vercel.nexterias.dev/) for detailed setup instructions and reference information.
+
+## Examples
+
+- [List of projects using actions-vercel](https://github.com/search?q=%22nexterias%2Factions-vercel%22+path%3A.github%2Fworkflows+-is%3Afork+-repo%3Anexterias%2Factions-vercel&type=code)
 
 ## Privacy
 

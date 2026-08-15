@@ -1,0 +1,20 @@
+name: Cleanup
+
+on:
+  delete:
+
+permissions: {}
+
+jobs:
+  cleanup:
+    if: ${{ github.event.ref_type == 'branch' }}
+    name: Clean up deployments
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: nexterias/actions-vercel@1b60ba3b9c42b454b61389101e31b0badab1da33 # main
+        with:
+          token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          cleanup-deployment: true

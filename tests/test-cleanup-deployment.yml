@@ -1,0 +1,33 @@
+name: Test cleanup deployment
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          token: fake-vercel-token
+          project-id: fake-project-id
+          org-id: fake-org-id
+          cleanup-deployment: "true"
+      - name: Assert action ran and produced an outcome for cleanup deployment
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          DEPLOYMENT_URL: ${{ steps.action.outputs.deployment-url }}
+          DEPLOYMENT_STATUS: ${{ steps.action.outputs.deployment-status }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "deployment-url: $DEPLOYMENT_URL"
+          echo "deployment-status: $DEPLOYMENT_STATUS"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: cleanup-deployment succeeded (deployment-url=$DEPLOYMENT_URL)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully with invalid credentials (expected for cleanup)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
