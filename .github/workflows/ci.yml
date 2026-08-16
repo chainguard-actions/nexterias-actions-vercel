@@ -1,0 +1,95 @@
+name: CI
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - dist/*
+  push:
+    branches: [main]
+    paths-ignore:
+      - dist/*
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          cache: "pnpm"
+          node-version: 24
+
+      - run: pnpm i --frozen-lock
+
+      - run: pnpm lint
+
+      - run: pnpm fmt:check
+
+      - run: pnpm build
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: actions-vercel-dist
+          path: ./dist
+
+      - name: Commit dist files
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ./dist
+          git commit -m "build: update \`dist\` files" || true
+          git push
+
+  deploy:
+    needs: [build]
+    name: Deploy
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          cache: "pnpm"
+          node-version: 24
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: actions-vercel-dist
+          path: ./dist
+
+      - uses: ./
+        id: vercel
+        with:
+          token: ${{ secrets.VERCEL_TOKEN }}
+          prebuilt: true
+          production: ${{ github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+
+      - env:
+          DEPLOYMENT_URL: ${{ steps.vercel.outputs.deployment-url }}
+          DEPLOYMENT_STATUS: ${{ steps.vercel.outputs.deployment-status }}
+        run: |
+          echo "$DEPLOYMENT_URL"
+          echo "$DEPLOYMENT_STATUS"

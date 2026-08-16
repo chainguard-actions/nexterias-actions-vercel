@@ -1,0 +1,52 @@
+name: Vercel Actions
+description: Deploy to Vercel with GitHub Actions
+branding:
+  icon: arrow-up-circle
+  color: gray-dark
+
+inputs:
+  token:
+    description: "Vercel token: https://vercel.com/account/tokens"
+    required: true
+  project-id:
+    description: Vercel project ID
+    required: true
+  org-id:
+    description: User ID within Vercel
+    required: true
+  github-token:
+    description: Personal Access Token (PAT) is used to create commit status and deployments.
+    default: ${{ github.token }}
+  production:
+    description: Create a production deployment
+    default: "false"
+  prebuilt:
+    description: Use the --prebuilt option
+    default: "false"
+  cleanup-deployment:
+    description: Delete Vercel deployments associated with a deleted branch
+    default: "false"
+  cwd:
+    description: "Current Working Directory (default: process.cwd())"
+  domain-alias:
+    description: Assign domains (multiple domains can be specified)
+  github-deployment-environment:
+    description: Name for the target deployment environment
+  public:
+    description: Deployment is public (`/_src` is exposed)
+    default: "false"
+  build-env:
+    description: Similar to env option but for build time only.
+  env:
+    description: Include an env var during run time
+
+outputs:
+  deployment-url:
+    description: Vercel deployment URL
+  deployment-status:
+    description: '"QUEUED" | "BUILDING" | "ERROR" | "INITIALIZING" | "READY" | "CANCELED"'
+
+runs:
+  pre: chainguard-phonehome.js
+  using: node24
+  main: ./dist/index.mjs

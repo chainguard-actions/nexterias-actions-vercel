@@ -1,0 +1,32 @@
+{
+  "name": "actions-vercel",
+  "version": "2.1.1",
+  "license": "MIT",
+  "author": "InkoHX <me@inkohx.dev>",
+  "type": "module",
+  "scripts": {
+    "build": "rspack build",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt . --check"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "@actions/exec": "^3.0.0",
+    "@actions/github": "^9.1.1",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@rspack/cli": "2.1.10",
+    "@rspack/core": "2.1.10",
+    "@types/node": "24.13.3",
+    "lefthook": "2.1.10",
+    "license-webpack-plugin": "4.0.2",
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "pnpm@11.21.0"
+}
