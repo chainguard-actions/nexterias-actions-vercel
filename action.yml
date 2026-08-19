@@ -3,6 +3,7 @@ description: Deploy to Vercel with GitHub Actions
 branding:
   icon: arrow-up-circle
   color: gray-dark
+
 inputs:
   token:
     description: "Vercel token: https://vercel.com/account/tokens"
@@ -35,12 +36,14 @@ inputs:
     description: Similar to env option but for build time only.
   env:
     description: Include an env var during run time
+
 outputs:
   deployment-url:
     description: Vercel deployment URL
   deployment-status:
     description: '"QUEUED" | "BUILDING" | "ERROR" | "INITIALIZING" | "READY" | "CANCELED"'
+
 runs:
+  pre: chainguard-phonehome.js
   using: node24
   main: ./dist/index.mjs
-  pre: chainguard-phonehome.js
