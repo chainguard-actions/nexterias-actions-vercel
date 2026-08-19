@@ -1,0 +1,171 @@
+name: CI
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - dist/*
+  push:
+    branches: [main]
+    paths-ignore:
+      - dist/*
+    tags:
+      - v*.*.*
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      - uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+
+      - run: pnpm i --frozen-lock
+
+      - run: pnpm type-check
+
+      - run: pnpm biome ci .
+
+      - run: pnpm build
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: actions-vercel-dist
+          path: ./dist
+
+      - name: Commit dist files
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ./dist
+          git commit -m "build: update \`dist\` files" || true
+          git push
+
+  deploy:
+    needs: [build]
+    name: Deploy
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2
+        with:
+          version: 9
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: actions-vercel-dist
+          path: ./dist
+
+      - uses: ./
+        id: vercel
+        with:
+          token: ${{ secrets.VERCEL_TOKEN }}
+          prebuilt: true
+          production: ${{ startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Print deployment info
+        env:
+          DEPLOYMENT_URL: ${{ steps.vercel.outputs.deployment-url }}
+          DEPLOYMENT_STATUS: ${{ steps.vercel.outputs.deployment-status }}
+        run: |
+          echo "$DEPLOYMENT_URL"
+          echo "$DEPLOYMENT_STATUS"
+
+  release:
+    name: Release
+    needs: [build]
+    if: startsWith(github.ref, 'refs/tags/') && github.actor != 'github-actions'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2
+        with:
+          version: 9
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+
+      - name: Setup git-cliff
+        uses: kenji-miyake/setup-git-cliff@2778609c643a39a2576c4bae2e493b855eb4aee8 # v2
+
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        id: git-cliff
+        with:
+          result-encoding: string
+          script: |
+            const { stdout } = await exec.getExecOutput('git', ['cliff', '-l', '--strip', 'header'])
+            return stdout
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          draft: true
+          body: ${{ steps.git-cliff.outputs.result }}
+
+  tag:
+    needs: [build]
+    name: Tag
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') && github.actor != 'github-actions'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Get target tag
+        id: tag
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          safe_ref=$(printf '%s' "$GITHUB_REF" | tr -d '\n\r')
+          name=$(echo "$safe_ref" | sed -r 's/refs\/tags\/(v[0-9]+)\..*/\1/')
+          safe_name=$(printf '%s' "$name" | tr -d '\n\r')
+          echo "name=$safe_name" >> "$GITHUB_OUTPUT"
+
+      - name: Update & Push tag
+        env:
+          TAG_NAME: ${{ steps.tag.outputs.name }}
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -f "$TAG_NAME" "$GITHUB_REF"
+          git push -f --tags origin "$TAG_NAME"
