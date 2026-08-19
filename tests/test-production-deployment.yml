@@ -1,4 +1,4 @@
-name: Test invalid credentials error handling
+name: Test production deployment flag (invalid credentials)
 on:
   workflow_dispatch:
 jobs:
@@ -14,10 +14,10 @@ jobs:
           token: fake-vercel-token
           project-id: fake-project-id
           org-id: fake-org-id
-          github-token: ${{ github.token }}
-          production: 'false'
+          production: 'true'
+          prebuilt: 'false'
 
-      - name: Assert action failed with invalid credentials
+      - name: Assert action failed gracefully for production deployment
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
@@ -26,4 +26,4 @@ jobs:
             echo "FAIL: expected action to fail with invalid credentials, but got outcome: $OUTCOME"
             exit 1
           fi
-          echo "PASS: action correctly failed with invalid credentials"
+          echo "PASS: action correctly failed for production deployment with invalid credentials"
