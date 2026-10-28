@@ -6,14 +6,14 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.2.1 | [`v1.2.1`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.1) | [`8105e68`](https://github.com/nexterias/actions-vercel/commit/8105e682d635529a5aa77c44d131303c7a500e03) |
-| v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.2) | [`5239dc3`](https://github.com/nexterias/actions-vercel/commit/5239dc3e447feddcb5cb70663bc2f67292946e87) |
-| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.3) | [`40c9331`](https://github.com/nexterias/actions-vercel/commit/40c93311b3f4db0424ad64f8ff8e16b2820d7c38) |
-| v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.0.0) | [`9a0f034`](https://github.com/nexterias/actions-vercel/commit/9a0f034d979251b1e0498731400bf32df3b00a27) |
-| v2.1.0 | [`v2.1.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.1.0) | [`f2f3f5e`](https://github.com/nexterias/actions-vercel/commit/f2f3f5e397e258956c9dfc9e771029821ba10265) |
-| v2.1.1 | [`v2.1.1`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.1.1) | [`1f880ca`](https://github.com/nexterias/actions-vercel/commit/1f880ca0bbdb7ffb16daffc882a9ef8728f2968c) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v1.2.1 | [`v1.2.1`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.1) | [`8105e68`](https://github.com/nexterias/actions-vercel/commit/8105e682d635529a5aa77c44d131303c7a500e03) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v1.2.1/HARDENING.md) |
+| v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.2) | [`5239dc3`](https://github.com/nexterias/actions-vercel/commit/5239dc3e447feddcb5cb70663bc2f67292946e87) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v1.2.2/HARDENING.md) |
+| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v1.2.3) | [`40c9331`](https://github.com/nexterias/actions-vercel/commit/40c93311b3f4db0424ad64f8ff8e16b2820d7c38) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v1.2.3/HARDENING.md) |
+| v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.0.0) | [`9a0f034`](https://github.com/nexterias/actions-vercel/commit/9a0f034d979251b1e0498731400bf32df3b00a27) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v2.0.0/HARDENING.md) |
+| v2.1.0 | [`v2.1.0`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.1.0) | [`f2f3f5e`](https://github.com/nexterias/actions-vercel/commit/f2f3f5e397e258956c9dfc9e771029821ba10265) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v2.1.0/HARDENING.md) |
+| v2.1.1 | [`v2.1.1`](https://github.com/chainguard-actions/nexterias-actions-vercel/tree/v2.1.1) | [`1f880ca`](https://github.com/nexterias/actions-vercel/commit/1f880ca0bbdb7ffb16daffc882a9ef8728f2968c) | [`HARDENING.md`](https://github.com/chainguard-actions/nexterias-actions-vercel/blob/v2.1.1/HARDENING.md) |
 
 ## Privacy
 
