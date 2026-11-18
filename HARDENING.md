@@ -4,51 +4,81 @@
 
 > This file was generated automatically by the hardening agent.
 
-**Policy SHA:** `d636be7e43ef829af6e853da6b3c7566db9f72fe`
+**Policy SHA:** `374911c4be584df24e6da57af2d990570ef0f859`
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
 **Harden Agent Version:** `2`
 
-Action **nexterias--actions-vercel/v2.1.0** was hardened automatically. 3 finding(s) were identified and resolved across 1 iteration(s).
+Action **nexterias--actions-vercel/v2.1.0** was hardened automatically. 1 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
-### script-injection (severity: high)
+### prior-fix (severity: high)
 
-Rule (a): Direct ${{ }} expression interpolation inside run: shell commands. In the 'deploy' job, `echo ${{ steps.vercel.outputs.deployment-url }}` and `echo ${{ steps.vercel.outputs.deployment-status }}` interpolate step outputs directly into the shell. In the 'tag' job 'Get target tag' step, `${{ github.ref }}` is interpolated directly into the shell command. In the 'tag' job 'Update & Push tag' step, `${{ steps.tag.outputs.name }}` and `${{ github.ref }}` are interpolated directly into git commands. All of these bypass shell quoting and allow an attacker-controlled value to inject shell metacharacters.
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. The previous harden changed CLAUDE.md without recording a finding for it, and this analysis reported nothing there. Re-apply its security changes unless the code no longer needs them. The previous patch:
+```diff
+diff --git a/CLAUDE.md b/CLAUDE.md
+deleted file mode 120000
+index 55bf822..0000000
+--- a/CLAUDE.md
++++ /dev/null
+@@ -1 +0,0 @@
+-./AGENTS.md
+\ No newline at end of file
+diff --git a/CLAUDE.md b/CLAUDE.md
+new file mode 100644
+index 0000000..53faa6a
+--- /dev/null
++++ b/CLAUDE.md
+@@ -0,0 +1,33 @@
++# AGENTS.md for `nexterias/actions-vercel`
++
++## Commands
++
++```sh
++# 型チェック
++pnpm lint
++
++# フォーマット確認
++pnpm fmt:check
++```
++
++## 開発ルール
++
++- ソースコードを変更した場合、`pnpm lint && pnpm fmt:check`が必ず通過することを確認する
++- `src/`配下のソースコードを変更した場合、`docs/`配下のドキュメントを更新する必要があるか確認し、ユーザーの指示を仰ぐこと
++
++## コミットメッセージ
++
++- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)の規約に従う
++- コミットメッセージは英語で記述すること
++
++### テンプレート
++
++```
++<type>[optional scope]: <description>
++
++[optional body]
++
++[optional footer(s)]
++```
++
++使用できる`type`については、`./cliff.toml`を参照すること
+
+```
 
 Locations:
 
-- `.github/workflows/ci.yml:79`
-- `.github/workflows/ci.yml:80`
-- `.github/workflows/ci.yml:107`
-- `.github/workflows/ci.yml:112`
-- `.github/workflows/ci.yml:113`
-
-### github-env-injection (severity: high)
-
-The 'Get target tag' step in the 'tag' job writes `${{ github.ref }}` (processed through sed) directly to $GITHUB_OUTPUT without sanitization (no `printf '%s' ... | tr -d '\n\r'` step). A ref containing newline characters could inject arbitrary key=value pairs into the GitHub output environment file: `echo "name=$(echo '${{ github.ref }}' | sed -r 's/refs\/tags\/(v[0-9]+)\..*/\1/')" >> $GITHUB_OUTPUT`
-
-Locations:
-
-- `.github/workflows/ci.yml:107`
-
-### missing-permissions (severity: medium)
-
-The workflow file cleanup-deployments.yml has no top-level `permissions:` key and the only job ('cleanup') also has no job-level `permissions:` key. This means the workflow runs with the default (potentially broad) token permissions. A minimal permissions block (e.g., `permissions: {}` or specific scopes) should be added.
-
-Locations:
-
-- `.github/workflows/cleanup-deployments.yml:1`
+- `CLAUDE.md`
 
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** script-injection, github-env-injection, missing-permissions
+**Fixes applied:** prior-fix
 
 **Notes:**
 
-ci.yml: (1) Lines 79-80: moved `steps.vercel.outputs.deployment-url` and `steps.vercel.outputs.deployment-status` into an `env:` block and referenced as `$DEPLOYMENT_URL`/`$DEPLOYMENT_STATUS` in the run script. (2) Line 107 (Get target tag): moved `github.ref` into `env: GITHUB_REF`, used `printf '%s'` piped through `sed` then `tr -d '\n\r'` before writing to `$GITHUB_OUTPUT` — fixes both script-injection and github-env-injection. (3) Lines 112-113 (Update & Push tag): moved `steps.tag.outputs.name` and `github.ref` into `env: TAG_NAME`/`GITHUB_REF` and referenced as double-quoted shell variables in the git commands. cleanup-deployments.yml: Added `permissions: {}` at the workflow top level to restrict the default GitHub token to no permissions.
+The earlier harden replaced the CLAUDE.md symlink (which points to ./AGENTS.md) with a regular file holding the same text. I wrote that text to hardened/action/CLAUDE.md with write_file, but the change did not take: listing the directory afterwards still shows CLAUDE.md as a symlink to ./AGENTS.md. The write probably followed the link into AGENTS.md. That did no harm, because the text is identical (AGENTS.md is still 820 bytes and unchanged), but CLAUDE.md is still a symlink. None of my tools can delete a symlink, so someone needs to remove the CLAUDE.md link and then write the regular file in its place. No action.yml or runtime code was involved.
 
